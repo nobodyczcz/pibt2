@@ -17,6 +17,8 @@ int main(int argc, char* argv[])
 {
   std::string instance_file = "";
   std::string output_file = DEFAULT_OUTPUT_FILE;
+  std::string path_file = DEFAULT_OUTPUT_FILE;
+
   std::string solver_name;
   bool verbose = false;
   char* argv_copy[argc + 1];
@@ -47,7 +49,8 @@ int main(int argc, char* argv[])
         instance_file = std::string(optarg);
         break;
       case 'o':
-        output_file = std::string(optarg);
+        output_file = std::string(optarg)+".txt";
+        path_file = std::string(optarg)+".path";
         break;
       case 's':
         solver_name = std::string(optarg);
@@ -97,7 +100,7 @@ int main(int argc, char* argv[])
   solver->printResult();
 
   // output result
-  solver->makeLog(output_file);
+  solver->makeLog(output_file, path_file);
   if (verbose) {
     std::cout << "save result as " << output_file << std::endl;
   }

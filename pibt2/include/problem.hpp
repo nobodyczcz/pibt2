@@ -85,6 +85,7 @@ public:
   MAPF_Instance(const std::string& _instance);
   MAPF_Instance(MAPF_Instance* P, Config _config_s, Config _config_g,
                 int _max_comp_time, int _max_timestep);
+  MAPF_Instance(std::string map_file, std::string agent_file, int agentsNum,int _max_comp_time, int _max_timestep, int seed=0);
   MAPF_Instance(MAPF_Instance* P, int _max_comp_time);
   ~MAPF_Instance();
 

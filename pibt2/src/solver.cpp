@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iomanip>
+#include <stack>
 
 MinimumSolver::MinimumSolver(Problem* _P)
     : solver_name(""),
@@ -199,13 +200,17 @@ void MinimumSolver::printHelpWithoutOption(const std::string& solver_name)
 // -------------------------------
 // log
 // -------------------------------
-void MAPF_Solver::makeLog(const std::string& logfile)
+void MAPF_Solver::makeLog(const std::string& logfile, const std::string& pathfile)
 {
   std::ofstream log;
   log.open(logfile, std::ios::out);
   makeLogBasicInfo(log);
-  makeLogSolution(log);
   log.close();
+
+  std::ofstream path;
+  path.open(pathfile, std::ios::out);
+  makeLogSolution(path);
+  path.close();
 }
 
 void MAPF_Solver::makeLogBasicInfo(std::ofstream& log)
@@ -227,26 +232,32 @@ void MAPF_Solver::makeLogBasicInfo(std::ofstream& log)
 void MAPF_Solver::makeLogSolution(std::ofstream& log)
 {
   if (log_short) return;
-  log << "starts=";
-  for (int i = 0; i < P->getNum(); ++i) {
-    Node* v = P->getStart(i);
-    log << "(" << v->pos.x << "," << v->pos.y << "),";
-  }
-  log << "\ngoals=";
-  for (int i = 0; i < P->getNum(); ++i) {
-    Node* v = P->getGoal(i);
-    log << "(" << v->pos.x << "," << v->pos.y << "),";
-  }
-  log << "\n";
-  log << "solution=\n";
-  for (int t = 0; t <= solution.getMakespan(); ++t) {
-    log << t << ":";
+  std::vector<std::stack<std::pair<int,int>>> all;
+  all.resize(P->getNum());
+  for (int t = solution.getMakespan(); t >=0; t--) {
     auto c = solution.get(t);
-    for (auto v : c) {
-      log << "(" << v->pos.x << "," << v->pos.y << "),";
+    for (int a=0 ; a<c.size(); a++) {
+      if (all[a].size() == 1 &&
+          all[a].top().first == P->getGoal(a)->pos.x &&
+          all[a].top().second == P->getGoal(a)->pos.y &&
+          c[a]->pos.x == all[a].top().first &&
+          c[a]->pos.y == all[a].top().second
+          )
+        continue;
+      all[a].push(std::make_pair(c[a]->pos.x, c[a]->pos.y ));
     }
-    log << "\n";
   }
+
+  for(int a=0; a<P->getNum();a++){
+    auto& path = all[a];
+    log<<"Agent "<< a <<":";
+    while (!path.empty()){
+      log << "("<<path.top().first<<"," << path.top().second<<")->";
+      path.pop();
+    }
+    log<<std::endl;
+  }
+  log.close();
 }
 
 // -------------------------------
@@ -604,13 +615,18 @@ void MAPD_Solver::printResult()
             << std::setw(6) << getAverageServiceTime() << std::endl;
 }
 
-void MAPD_Solver::makeLog(const std::string& logfile)
+void MAPD_Solver::makeLog(const std::string& logfile, const std::string& pathfile)
 {
   std::ofstream log;
   log.open(logfile, std::ios::out);
   makeLogBasicInfo(log);
-  makeLogSolution(log);
   log.close();
+
+  std::ofstream path;
+  path.open(pathfile, std::ios::out);
+  makeLogSolution(path);
+  path.close();
+
 }
 
 void MAPD_Solver::makeLogBasicInfo(std::ofstream& log)

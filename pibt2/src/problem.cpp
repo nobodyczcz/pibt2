@@ -44,6 +44,95 @@ void Problem::warn(const std::string& msg) const
 // -------------------------------------------
 // MAPF
 
+MAPF_Instance::MAPF_Instance(std::string map_file, std::string agent_file, int agentsNum,int _max_comp_time, int _max_timestep, int seed)
+  : Problem(agent_file), instance_initialized(true)
+{
+  std::ifstream file(instance);
+  if (!file) halt("file " + instance + " is not found.");
+
+  //read map
+  G = new Grid(map_file);
+
+  // set agent num
+  num_agents = agentsNum;
+
+  // set random seed
+  MT = new std::mt19937(seed);
+
+  max_timestep = _max_timestep;
+  max_comp_time = _max_comp_time;
+  std::regex r_sg = std::regex(R"(.+(\d+)[\t ]+(\d+)[\t ]+(\d+)[\t ]+(\d+)[\t ]+(\d+)[\t ]+(\d+).+)");
+  std::regex r_comment = std::regex(R"(#.+)");
+
+
+  bool read_scen = true;
+  bool well_formed = false;
+
+  if (num_agents == 0)
+  {
+    std::cerr << "The number of agents should be larger than 0" << std::endl;
+    exit(-1);
+  }
+
+  std::string line;
+  std::smatch results;
+  while (getline(file, line)) {
+    // for CRLF coding
+    if (*(line.end() - 1) == 0x0d) line.pop_back();
+
+    // comment
+    if (std::regex_match(line, results, r_comment)) {
+      continue;
+    }
+    if (std::regex_match(line, results, r_sg) && read_scen &&
+    (int)config_s.size() < num_agents) {
+      int x_s = std::stoi(results[2].str());
+      int y_s = std::stoi(results[3].str());
+      int x_g = std::stoi(results[4].str());
+      int y_g = std::stoi(results[5].str());
+      if (!G->existNode(x_s, y_s)) {
+        halt("start node (" + std::to_string(x_s) + ", " + std::to_string(y_s) +
+        ") does not exist, invalid scenario");
+      }
+      if (!G->existNode(x_g, y_g)) {
+        halt("goal node (" + std::to_string(x_g) + ", " + std::to_string(y_g) +
+        ") does not exist, invalid scenario");
+      }
+//      std::cout<<x_s<<" "<<y_s<<" "<< x_g <<" "<<y_g<<std::endl;
+      Node* s = G->getNode(x_s, y_s);
+      Node* g = G->getNode(x_g, y_g);
+      config_s.push_back(s);
+      config_g.push_back(g);
+    }
+
+  }
+
+  // set default value not identified params
+  if (MT == nullptr) MT = new std::mt19937(DEFAULT_SEED);
+  if (max_timestep == 0) max_timestep = DEFAULT_MAX_TIMESTEP;
+  if (max_comp_time == 0) max_comp_time = DEFAULT_MAX_COMP_TIME;
+
+  // check starts/goals
+  if (num_agents <= 0) halt("invalid number of agents");
+  const int config_s_size = config_s.size();
+  if (!config_s.empty() && num_agents > config_s_size) {
+    warn("given starts/goals are not sufficient\nrandomly create instances");
+  }
+  if (num_agents > config_s_size) {
+    if (well_formed) {
+      setWellFormedInstance();
+    } else {
+      setRandomStartsGoals();
+    }
+  }
+
+  // trimming
+  config_s.resize(num_agents);
+  config_g.resize(num_agents);
+//  std::cout<<max_timestep <<" "<< max_comp_time<<std::endl;
+//  std::cout<<num_agents<<" "<< config_s.size() <<" "<< config_g.size()<<std::endl;
+}
+
 MAPF_Instance::MAPF_Instance(const std::string& _instance)
     : Problem(_instance), instance_initialized(true)
 {

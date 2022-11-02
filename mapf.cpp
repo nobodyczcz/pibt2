@@ -17,20 +17,30 @@ std::unique_ptr<MAPF_Solver> getSolver(const std::string solver_name,
 
 int main(int argc, char* argv[])
 {
-  std::string instance_file = "";
+  std::string map_file = "";
+  std::string agent_file = "";
+  int agentsNum = 0;
+
   std::string output_file = DEFAULT_OUTPUT_FILE;
+  std::string path_file = DEFAULT_OUTPUT_FILE;
+
   std::string solver_name;
   bool verbose = false;
   char* argv_copy[argc + 1];
   for (int i = 0; i < argc; ++i) argv_copy[i] = argv[i];
 
   struct option longopts[] = {
-      {"instance", required_argument, 0, 'i'},
+      {"map",required_argument,0,'m'},
+      {"agents", required_argument,0,'a'},
+      {"agentNum",required_argument,0,'k'},
       {"output", required_argument, 0, 'o'},
       {"solver", required_argument, 0, 's'},
+      {"seed", optional_argument, 0, 'd'},
       {"verbose", no_argument, 0, 'v'},
       {"help", no_argument, 0, 'h'},
-      {"time-limit", required_argument, 0, 'T'},
+      {"time-limit", required_argument, 0, 't'},
+      {"timestep-limit", optional_argument, 0, 'e'},
+
       {"log-short", no_argument, 0, 'L'},
       {"make-scen", no_argument, 0, 'P'},
       {0, 0, 0, 0},
@@ -38,21 +48,37 @@ int main(int argc, char* argv[])
   bool make_scen = false;
   bool log_short = false;
   int max_comp_time = -1;
-
+  int max_timestep = -1;
   // command line args
-  int opt, longindex;
+  int opt, longindex, random_seed;
   opterr = 0;  // ignore getopt error
-  while ((opt = getopt_long(argc, argv, "i:o:s:vhPT:L", longopts,
+  while ((opt = getopt_long(argc, argv, "m:a:k:o:s:d:t:e:vhPL", longopts,
                             &longindex)) != -1) {
     switch (opt) {
-      case 'i':
-        instance_file = std::string(optarg);
+      case 'm':
+        map_file = std::string(optarg);
+        break;
+      case 'a':
+        agent_file = std::string(optarg);
+        break;
+      case 'k':
+        agentsNum = std::atoi(optarg);
         break;
       case 'o':
-        output_file = std::string(optarg);
+        output_file = std::string(optarg)+".txt";
+        path_file =  std::string(optarg)+".path";
         break;
       case 's':
         solver_name = std::string(optarg);
+        break;
+      case 'd':
+        random_seed = std::atoi(optarg);
+        break;
+      case 't':
+        max_comp_time = std::atoi(optarg) * 1000;
+        break;
+      case 'e':
+        max_timestep = std::atoi(optarg);
         break;
       case 'v':
         verbose = true;
@@ -66,23 +92,19 @@ int main(int argc, char* argv[])
       case 'L':
         log_short = true;
         break;
-      case 'T':
-        max_comp_time = std::atoi(optarg);
-        break;
       default:
         break;
     }
   }
 
-  if (instance_file.length() == 0) {
-    std::cout << "specify instance file using -i [INSTANCE-FILE], e.g.,"
+  if (map_file.length() == 0 ||  agent_file.length()==0) {
+    std::cout << "specify map file using -m [MAPF-FILE], agent file using -a [AGENT-FILE]"
               << std::endl;
-    std::cout << "> ./mapf -i ../instance/sample.txt" << std::endl;
     return 0;
   }
 
   // set problem
-  auto P = MAPF_Instance(instance_file);
+  auto P = MAPF_Instance(map_file,agent_file,agentsNum, max_comp_time,max_timestep,random_seed);
 
   // set max computation time (otherwise, use param in instance_file)
   if (max_comp_time != -1) P.setMaxCompTime(max_comp_time);
@@ -104,7 +126,7 @@ int main(int argc, char* argv[])
   solver->printResult();
 
   // output result
-  solver->makeLog(output_file);
+  solver->makeLog(output_file, path_file);
   if (verbose) {
     std::cout << "save result as " << output_file << std::endl;
   }
@@ -140,12 +162,14 @@ void printHelp()
 {
   std::cout << "\nUsage: ./mapf [OPTIONS] [SOLVER-OPTIONS]\n"
             << "\n**instance file is necessary to run MAPF simulator**\n\n"
-            << "  -i --instance [FILE_PATH]     instance file path\n"
-            << "  -o --output [FILE_PATH]       ouptut file path\n"
+            << "  -m --map [FILE_PATH]     map file path\n"
+            << "  -a --agent [FILE_PATH]     scenario file path\n"
+            << "  -e --timestep-limit [FILE_PATH]     max timestep\n"
+            << "  -o --output [FILE_PATH]       ouptut file path \n"
             << "  -v --verbose                  print additional info\n"
             << "  -h --help                     help\n"
             << "  -s --solver [SOLVER_NAME]     solver, choose from the below\n"
-            << "  -T --time-limit [INT]         max computation time (ms)\n"
+            << "  -t --time-limit [INT]         max computation time (s)\n"
             << "  -L --log-short                use short log"
             << "  -P --make-scen                make scenario file using "
                "random starts/goals"

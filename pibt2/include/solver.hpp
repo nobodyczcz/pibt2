@@ -168,7 +168,7 @@ public:
   // -------------------------------
   // log
 public:
-  virtual void makeLog(const std::string& logfile = "./result.txt");
+  virtual void makeLog(const std::string& logfile = "./result.txt", const std::string& pathfile = "./result.path");
 
 protected:
   virtual void makeLogBasicInfo(std::ofstream& log);
@@ -252,7 +252,7 @@ public:
   // -------------------------------
   // log
 public:
-  virtual void makeLog(const std::string& logfile = "./result.txt");
+  virtual void makeLog(const std::string& logfile = "./result.txt", const std::string& pathfile = "./result.path");
 
 protected:
   virtual void makeLogBasicInfo(std::ofstream& log);
