@@ -58,8 +58,9 @@ void MinimumSolver::info() const
 void MinimumSolver::halt(const std::string& msg) const
 {
   std::cout << "error@" << solver_name << ": " << msg << std::endl;
-  this->~MinimumSolver();
-  std::exit(1);
+//  this->~MinimumSolver();
+//  std::exit(1);
+throw std::logic_error("Error Throw: "+ msg);
 }
 
 void MinimumSolver::warn(const std::string& msg) const

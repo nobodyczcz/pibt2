@@ -52,7 +52,12 @@ void PIBT_PLUS::run()
          comp_solver->getSolverName(), "to complement the remain");
 
     // solve
-    comp_solver->solve();
+    try{
+      comp_solver->solve();
+    }
+    catch (...){
+      warn("PushAndSwap Error, Ingore it.");
+    };
     solution += comp_solver->getSolution();
     if (comp_solver->succeed()) solved = true;
 
