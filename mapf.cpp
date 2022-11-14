@@ -34,6 +34,8 @@ int main(int argc, char* argv[])
       {"agents", required_argument,0,'a'},
       {"agentNum",required_argument,0,'k'},
       {"output", required_argument, 0, 'o'},
+      {"outputPaths", optional_argument, 0, 'p'},
+
       {"solver", required_argument, 0, 's'},
       {"seed", optional_argument, 0, 'd'},
       {"verbose", no_argument, 0, 'v'},
@@ -52,7 +54,7 @@ int main(int argc, char* argv[])
   // command line args
   int opt, longindex, random_seed;
   opterr = 0;  // ignore getopt error
-  while ((opt = getopt_long(argc, argv, "m:a:k:o:s:d:t:e:vhPL", longopts,
+  while ((opt = getopt_long(argc, argv, "m:a:k:o:p:s:d:t:e:vhPL", longopts,
                             &longindex)) != -1) {
     switch (opt) {
       case 'm':
@@ -65,7 +67,9 @@ int main(int argc, char* argv[])
         agentsNum = std::atoi(optarg);
         break;
       case 'o':
-        output_file = std::string(optarg)+".txt";
+        output_file = std::string(optarg)+".csv";
+        break;
+      case 'p':
         path_file =  std::string(optarg)+".path";
         break;
       case 's':
@@ -165,7 +169,9 @@ void printHelp()
             << "  -m --map [FILE_PATH]     map file path\n"
             << "  -a --agent [FILE_PATH]     scenario file path\n"
             << "  -e --timestep-limit [FILE_PATH]     max timestep\n"
-            << "  -o --output [FILE_PATH]       ouptut file path \n"
+            << "  -o --output [FILE_PATH]       output file path \n"
+            << "  -p --outputPaths [FILE_PATH]       paths to output file \n"
+
             << "  -v --verbose                  print additional info\n"
             << "  -h --help                     help\n"
             << "  -s --solver [SOLVER_NAME]     solver, choose from the below\n"

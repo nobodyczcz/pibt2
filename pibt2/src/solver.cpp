@@ -203,8 +203,14 @@ void MinimumSolver::printHelpWithoutOption(const std::string& solver_name)
 // -------------------------------
 void MAPF_Solver::makeLog(const std::string& logfile, const std::string& pathfile)
 {
+  std::ifstream infile(logfile);
+  bool exist = infile.good();
+
   std::ofstream log;
-  log.open(logfile, std::ios::out);
+  log.open(logfile, std::ios::app);
+  if (!exist){
+    log<<"solved, runtime, solution cost, makespan, lb_soc, lb_makespan, instance, map, num_agents, solver, preprocessing time "<<"\n";
+  }
   makeLogBasicInfo(log);
   log.close();
 
@@ -217,17 +223,19 @@ void MAPF_Solver::makeLog(const std::string& logfile, const std::string& pathfil
 void MAPF_Solver::makeLogBasicInfo(std::ofstream& log)
 {
   Grid* grid = reinterpret_cast<Grid*>(P->getG());
-  log << "instance=" << P->getInstanceFileName() << "\n";
-  log << "agents=" << P->getNum() << "\n";
-  log << "map_file=" << grid->getMapFileName() << "\n";
-  log << "solver=" << solver_name << "\n";
-  log << "solved=" << solved << "\n";
-  log << "soc=" << solution.getSOC() << "\n";
-  log << "lb_soc=" << getLowerBoundSOC() << "\n";
-  log << "makespan=" << solution.getMakespan() << "\n";
-  log << "lb_makespan=" << getLowerBoundMakespan() << "\n";
-  log << "comp_time=" << getCompTime() << "\n";
-  log << "preprocessing_comp_time=" << preprocessing_comp_time << "\n";
+  log << solved << ",";
+  log << getCompTime() << ",";
+  log << solution.getSOC() << ",";
+  log << solution.getMakespan() << ",";
+  log << getLowerBoundSOC() << ",";
+  log << getLowerBoundMakespan() << ",";
+
+  log << P->getInstanceFileName() << ",";
+  log << grid->getMapFileName() << ",";
+
+  log << P->getNum() << ",";
+  log << solver_name << ",";
+  log << preprocessing_comp_time << "\n";
 }
 
 void MAPF_Solver::makeLogSolution(std::ofstream& log)
