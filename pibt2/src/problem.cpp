@@ -61,7 +61,7 @@ MAPF_Instance::MAPF_Instance(std::string map_file, std::string agent_file, int a
 
   max_timestep = _max_timestep;
   max_comp_time = _max_comp_time;
-  std::regex r_sg = std::regex(R"(\t.+(\d+)[\t ]+(\d+)[\t ]+(\d+)[\t ]+(\d+)[\t ]+(\d+)[\t ]+(\d+).+)");
+  std::regex r_sg = std::regex(R"(.+(\d+)[\t ]+(\d+)[\t ]+(\d+)[\t ]+(\d+)[\t ]+(\d+)[\t ]+(\d+)[\t ].+)");
   std::regex r_comment = std::regex(R"(#.+)");
 
 
