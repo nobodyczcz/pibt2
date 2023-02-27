@@ -225,7 +225,10 @@ void MAPF_Solver::makeLogBasicInfo(std::ofstream& log)
   Grid* grid = reinterpret_cast<Grid*>(P->getG());
   log << solved << ",";
   log << getCompTime() << ",";
-  log << solution.getSOC() << ",";
+  if (this->succeed())
+    log << solution.getSOC() << ",";
+  else
+    log << "-1" << ",";
   log << solution.getMakespan() << ",";
   log << getLowerBoundSOC() << ",";
   log << getLowerBoundMakespan() << ",";

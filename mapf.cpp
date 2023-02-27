@@ -67,10 +67,10 @@ int main(int argc, char* argv[])
         agentsNum = std::atoi(optarg);
         break;
       case 'o':
-        output_file = std::string(optarg)+".csv";
+        output_file = std::string(optarg);
         break;
       case 'p':
-        path_file =  std::string(optarg)+".path";
+        path_file =  std::string(optarg);
         break;
       case 's':
         solver_name = std::string(optarg);
@@ -135,6 +135,8 @@ int main(int argc, char* argv[])
     std::cout << "save result as " << output_file << std::endl;
   }
 
+  if (solver->succeed())
+    return 1;
   return 0;
 }
 
